@@ -103,13 +103,11 @@ def in_game_process():
     #     return None
 
     # log('Checking collectables items...', 'white')
-    log('harvesting...', 'white')
-    harvest()
-    time.sleep(1)
     log('select seed...', 'white')
     select_seed()
-    log('Planting selected Seed...', 'white')
-    plant_seed()
+
+    log('harvest and plant...', 'white')
+    harvest_and_plant()
     time.sleep(1)
     # log('Saving...', 'white')
     # save()
@@ -123,33 +121,50 @@ def count_free_slots():
     log('Counting free slots...', 'yellow')
     return len(css('.plant-hint'))
 
-
-def plant_seed():
-    """Plant selected vegetable."""
-    log('Planting...', 'white')
-    slots = DRIVER.find_elements(By.XPATH, "//div[@class='relative group']")
-    for e in slots:
-        if len(e.find_elements(By.XPATH, ".//img")) == 5:
-            e.click()
-            log('seed planted')
-            time.sleep(0.5)
-    log('[DONE]')
-
-
 def total_harvest_able():
     """Total harvest capacity."""
     return len(css('.harvest'))
 
 
-def harvest():
+def harvest_and_plant():
     """Check collectible plant."""
     slots = DRIVER.find_elements(By.XPATH, "//div[@class='relative group']")
     for e in slots:
-        if len(e.find_elements(By.XPATH, ".//img")) == 4:
-            e.click()
-            log('plant collected')
-            time.sleep(0.5)
+        # img_cnt_before = len(e.find_element(By.XPATH, './/img'))
+        e.click()
+        time.sleep(0.2)
+        # img_cnt_after = len(e.find_element(By.XPATH, './/img'))
 
+        # if img_cnt_before == img_cnt_after:
+        e.click()
+        time.sleep(0.2)
+        open_chest()
+        time.sleep(0.5)
+        get_back_shovel()
+        time.sleep(0.5)
+
+        e.click()
+        time.sleep(0.5)
+
+def get_back_shovel():
+    try:
+        DRIVER.find_element(By.XPATH, "//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  text-sm']").click()
+        xpath("//img[@class='absolute z-10 hover:img-highlight cursor-pointer']").click()
+        xpath("//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  text-sm']").click()
+        log('get back shovel', 'green')
+    except common.exceptions.NoSuchElementException as exception:
+        pass
+
+
+def open_chest():
+    try:
+        e = DRIVER.find_element(By.XPATH, "//img[@class='w-16 hover:img-highlight cursor-pointer']")
+        e.click()
+        xpath(
+            "//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  mt-4 w-full']").click()
+        log('open chest...', 'green')
+    except common.exceptions.NoSuchElementException as exception:
+        pass
 
 def save():
     """Save harvest."""
