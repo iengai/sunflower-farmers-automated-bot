@@ -1,6 +1,6 @@
 ---
-# In minutes, default 5 minutes
-time_monitor: 10
+# In minutes, default 1 minutes
+time_monitor: 1
 # Max waiting time for the game to respond.
 max_wait_time: 120
 # Plant craft selected

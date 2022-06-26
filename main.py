@@ -43,72 +43,79 @@ def start_game():
     login_metamask()
     log('Installing Polygon Network...')
     install_polygon_network()
+    add_personal_sfl_wallet()
+    time.sleep(3)
     log('Starting the game...')
     tries = 0
     DRIVER.get('https://sunflower-farmers.com/play/')
-    time.sleep(3)
-    xpath('//*[@id="welcome"]/div[1]').click()
-    main_window_handle = None
-    while not main_window_handle:
-        main_window_handle = DRIVER.current_window_handle
-    signin_window_handle = None
-    while not signin_window_handle:
-        for handle in DRIVER.window_handles:
-            if handle != main_window_handle:
-                signin_window_handle = handle
-                break
-    DRIVER.switch_to.window(signin_window_handle)
-    xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[4]/div[2]/button[2]').click()
-    time.sleep(1)
-    xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[2]/div[2]/footer/button[2]').click()
-    DRIVER.switch_to.window(main_window_handle)
-    while is_loading():
-        if tries >= MAX_WAIT_TIME:
-            log('Max tries to open the game, please try again some time later.')
-            raise ValueError('[Application closed]')
-        tries += 1
-        time.sleep(1)
+    time.sleep(30)
+    # xpath('//*[@id="welcome"]/div[1]').click()
+    # main_window_handle = None
+    # while not main_window_handle:
+    #     main_window_handle = DRIVER.current_window_handle
+    # signin_window_handle = None
+    # while not signin_window_handle:
+    #     for handle in DRIVER.window_handles:
+    #         if handle != main_window_handle:
+    #             signin_window_handle = handle
+    #             break
+    # DRIVER.switch_to.window(signin_window_handle)
+    # xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[4]/div[2]/button[2]').click()
+    # time.sleep(1)
+    # xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[2]/div[2]/footer/button[2]').click()
+    # DRIVER.switch_to.window(main_window_handle)
+    # while is_loading():
+    #     if tries >= MAX_WAIT_TIME:
+    #         log('Max tries to open the game, please try again some time later.')
+    #         raise ValueError('[Application closed]')
+    #     tries += 1
+    #     time.sleep(1)
 
     time.sleep(3)
-    if not settings['use_multi_acc']:
-        while True:
+    while True:
+        try:
             in_game_process()
             time.sleep(GLOBAL_SLEEP * 60)
-    else:
-        in_game_process()
+        except Exception as e:
+            print(e)
+    # if not settings['use_multi_acc']:
+    #     while True:
+    #         in_game_process()
+    #         time.sleep(GLOBAL_SLEEP * 60)
+    # else:
+    #     in_game_process()
 
 
 def in_game_process():
     """Main loop process."""
-    progress_plants = count_progress_plants()
-    log('Harvest in progress ---------- Total: [%s]' % progress_plants)
-    log('Checking empty places...')
-    if progress_plants == total_harvest_able():
-        log('Maximum capacity reached. No places to plant.', 'red')
-        log('So ok...')
-        if not settings['use_multi_acc']:
-            log('Checking again in %s minutes...' % GLOBAL_SLEEP)
-            log('No Worries. You can change it on config.yaml!')
-        else:
-            log('Switching to next account...', 'yellow')
-        log('☕ Take some coffee and fresh air...')
-        return None
+    # progress_plants = count_progress_plants()
+    # log('Harvest in progress ---------- Total: [%s]' % progress_plants)
+    # log('Checking empty places...')
+    # if progress_plants == total_harvest_able():
+    #     log('Maximum capacity reached. No places to plant.', 'red')
+    #     log('So ok...')
+    #     if not settings['use_multi_acc']:
+    #         log('Checking again in %s minutes...' % GLOBAL_SLEEP)
+    #         log('No Worries. You can change it on config.yaml!')
+    #     else:
+    #         log('Switching to next account...', 'yellow')
+    #     log('☕ Take some coffee and fresh air...')
+    #     return None
 
-    log('Checking collectables items...', 'white')
-    collect_plant()
+    # log('Checking collectables items...', 'white')
+    log('harvesting...', 'white')
+    harvest()
     time.sleep(1)
-    log('Places available to plant: %s.' % count_free_slots(), 'white')
-    time.sleep(1)
-    log('Select Item to plant...')
-    select_basket()
+    log('select seed...', 'white')
+    select_seed()
     log('Planting selected Seed...', 'white')
     plant_seed()
     time.sleep(1)
-    log('Saving...', 'white')
-    save()
-    while is_saving():
-        time.sleep(3)
-    log('Saved!')
+    # log('Saving...', 'white')
+    # save()
+    # while is_saving():
+    #     time.sleep(3)
+    # log('Saved!')
 
 
 def count_free_slots():
@@ -120,10 +127,12 @@ def count_free_slots():
 def plant_seed():
     """Plant selected vegetable."""
     log('Planting...', 'white')
-    to_plant = css('.plant-hint')
-    for place in to_plant:
-        js_click(place)
-        time.sleep(0.5)
+    slots = DRIVER.find_elements(By.XPATH, "//div[@class='relative group']")
+    for e in slots:
+        if len(e.find_elements(By.XPATH, ".//img")) == 5:
+            e.click()
+            log('seed planted')
+            time.sleep(0.5)
     log('[DONE]')
 
 
@@ -132,13 +141,14 @@ def total_harvest_able():
     return len(css('.harvest'))
 
 
-def collect_plant():
+def harvest():
     """Check collectible plant."""
-    all_collectible = css('.harvest')
-    log('Places founded: %s. \nCollecting...' % len(all_collectible), 'white')
-    for idx, collect in enumerate(all_collectible):
-        js_click(collect)
-        time.sleep(0.5)
+    slots = DRIVER.find_elements(By.XPATH, "//div[@class='relative group']")
+    for e in slots:
+        if len(e.find_elements(By.XPATH, ".//img")) == 4:
+            e.click()
+            log('plant collected')
+            time.sleep(0.5)
 
 
 def save():
@@ -161,19 +171,19 @@ def save():
     DRIVER.switch_to.window(main_window_handle)
 
 
-def select_basket():
-    """Select fruit on basket."""
-    js_click(xpath('//*[@id="basket"]/img[2]'))
-    time.sleep(2)
-    js_click(xpath(plants_type[SELECTED_PLANT]))
-    time.sleep(2)
-    js_click(xpath('/html/body/div[3]/div/div/div/div/div/div/img'))
-    time.sleep(2)
+def select_seed():
+    """Select seed on basket."""
+    # open items tab
+    xpath("//div[@class='flex flex-col items-end mr-2 sm:block fixed top-16 right-0 z-50']").click()
+    # select first seed
+    DRIVER.find_elements(By.XPATH, "//div[@class='flex mb-2 flex-wrap -ml-1.5']")[0].find_element(By.XPATH, './/div/div').click()
+    # close tab
+    xpath("//img[@class='h-6 cursor-pointer mr-2 mb-1']").click()
 
 
 def count_progress_plants():
     """Count all plants in progress."""
-    progress_plants = css('span.progress-text')
+    progress_plants = css('div.flex.flex-col.text-xxs.text-white.text-shadow.ml-2.mr-2')
     for idx, plant in enumerate(progress_plants):
         log('Plants slot %s: %s left.' % (idx + 1, plant.text), 'white')
     return len(progress_plants)
@@ -280,6 +290,11 @@ def install_polygon_network():
     xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[5]/label/input').send_keys(block_explorer_url)
     xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[3]/button[2]').click()
 
+def add_personal_sfl_wallet():
+    xpath("//div[@class='identicon'][1]").click()
+    xpath("//div[@class='account-menu__item account-menu__item--clickable'][2]").click()
+    xpath("//input[@class='new-account-import-form__input-password']").send_keys(SECRET_KEY)
+    xpath("//button[@class='button btn--rounded btn-primary btn--large new-account-create-form__button']").click()
 
 def setup_linux_env():
     """Setup based in os.env variables.
@@ -299,8 +314,10 @@ def setup_single_acc():
     """Setup single Account."""
     global PHRASE
     global PASSWD
+    global SECRET_KEY
     PHRASE = settings['private']['secret_phrase']
     PASSWD = settings['private']['passwd']
+    SECRET_KEY = settings['private']['secret_key']
 
 
 def multi_acc_change():
