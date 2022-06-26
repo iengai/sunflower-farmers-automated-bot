@@ -48,7 +48,8 @@ def start_game():
     log('Starting the game...')
     tries = 0
     DRIVER.get('https://sunflower-farmers.com/play/')
-    time.sleep(30)
+    time.sleep(25)
+    from_welcome_to_ready()
     # xpath('//*[@id="welcome"]/div[1]').click()
     # main_window_handle = None
     # while not main_window_handle:
@@ -78,6 +79,10 @@ def start_game():
             time.sleep(GLOBAL_SLEEP * 60)
         except Exception as e:
             print(e)
+            DRIVER.get('https://sunflower-farmers.com/play/')
+            time.sleep(10)
+            from_welcome_to_ready()
+
     # if not settings['use_multi_acc']:
     #     while True:
     #         in_game_process()
@@ -125,6 +130,12 @@ def total_harvest_able():
     """Total harvest capacity."""
     return len(css('.harvest'))
 
+def from_welcome_to_ready():
+    xpath("//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  overflow-hidden mb-2']").click()
+    time.sleep(15)
+    # clear notifications
+    xpath("//img[@class='h-6 cursor-pointer']").click()
+    time.sleep(0.5)
 
 def harvest_and_plant():
     """Check collectible plant."""
