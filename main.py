@@ -134,13 +134,12 @@ def harvest_and_plant():
         e.click()
         time.sleep(0.2)
         # img_cnt_after = len(e.find_element(By.XPATH, './/img'))
-
+        get_back_shovel()
+        time.sleep(0.5)
         # if img_cnt_before == img_cnt_after:
         e.click()
         time.sleep(0.2)
         open_chest()
-        time.sleep(0.5)
-        get_back_shovel()
         time.sleep(0.5)
 
         e.click()
