@@ -188,7 +188,10 @@ def save():
 def select_seed():
     """Select seed on basket."""
     # open items tab
-    xpath("//div[@class='flex flex-col items-end mr-2 sm:block fixed top-16 right-0 z-50']").click()
+    try:
+        xpath("//div[@class='w-16 h-16 sm:mx-8 mt-2 relative flex justify-center items-center shadow rounded-full cursor-pointer']").click()
+    except common.exceptions.NoSuchElementException as exception:
+        xpath("//div[@class='flex flex-col items-end mr-2 sm:block fixed top-16 right-0 z-50']").click()
     # select first seed
     DRIVER.find_elements(By.XPATH, "//div[@class='flex mb-2 flex-wrap -ml-1.5']")[0].find_element(By.XPATH, './/div/div').click()
     # close tab
