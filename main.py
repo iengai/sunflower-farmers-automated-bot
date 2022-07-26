@@ -16,7 +16,8 @@ from settings import settings, plants_type
 log('[STARTING SUNFLOWER FARMERS AUTOMATED BOT...] \n')
 OPTIONS = webdriver.ChromeOptions()
 OPTIONS.add_argument("--disable-blink-features=AutomationControlled")
-OPTIONS.add_extension("MetaMask.crx")
+# OPTIONS.add_extension("MetaMask.crx")
+OPTIONS.add_extension("extension_10_17_0_0.crx")
 OPTIONS.add_argument("--disable-gpu")
 OPTIONS.add_argument("--disable-software-rasterizer")
 
@@ -48,29 +49,9 @@ def start_game():
     log('Starting the game...')
     tries = 0
     DRIVER.get('https://sunflower-farmers.com/play/')
-    time.sleep(25)
+    time.sleep(5)
+    auth_metamask()
     from_welcome_to_ready()
-    # xpath('//*[@id="welcome"]/div[1]').click()
-    # main_window_handle = None
-    # while not main_window_handle:
-    #     main_window_handle = DRIVER.current_window_handle
-    # signin_window_handle = None
-    # while not signin_window_handle:
-    #     for handle in DRIVER.window_handles:
-    #         if handle != main_window_handle:
-    #             signin_window_handle = handle
-    #             break
-    # DRIVER.switch_to.window(signin_window_handle)
-    # xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[4]/div[2]/button[2]').click()
-    # time.sleep(1)
-    # xpath('//*[@id="app-content"]/div/div[2]/div/div[2]/div[2]/div[2]/footer/button[2]').click()
-    # DRIVER.switch_to.window(main_window_handle)
-    # while is_loading():
-    #     if tries >= MAX_WAIT_TIME:
-    #         log('Max tries to open the game, please try again some time later.')
-    #         raise ValueError('[Application closed]')
-    #     tries += 1
-    #     time.sleep(1)
 
     time.sleep(3)
     while True:
@@ -79,17 +60,19 @@ def start_game():
             time.sleep(GLOBAL_SLEEP * 60)
         except Exception as e:
             print(e)
-            DRIVER.get('https://sunflower-farmers.com/play/')
+            DRIVER.refresh()
             time.sleep(10)
             from_welcome_to_ready()
 
-    # if not settings['use_multi_acc']:
-    #     while True:
-    #         in_game_process()
-    #         time.sleep(GLOBAL_SLEEP * 60)
-    # else:
-    #     in_game_process()
 
+def auth_metamask():
+    DRIVER.switch_to.window(DRIVER.window_handles[1])
+    xpath('//button[@class="button btn--rounded btn-primary"]').click()
+    xpath('//button[@class="button btn--rounded btn-primary page-container__footer-button"]').click()
+    time.sleep(3)
+    DRIVER.switch_to.window(DRIVER.window_handles[1])
+    xpath('//button[@class="button btn--rounded btn-primary btn--large request-signature__footer__sign-button"]').click()
+    DRIVER.switch_to.window(DRIVER.window_handles[0])
 
 def in_game_process():
     """Main loop process."""
@@ -110,7 +93,7 @@ def in_game_process():
     # log('Checking collectables items...', 'white')
     log('select seed...', 'white')
     select_seed()
-
+    time.sleep(1)
     log('harvest and plant...', 'white')
     harvest_and_plant()
     time.sleep(1)
@@ -131,10 +114,21 @@ def total_harvest_able():
     return len(css('.harvest'))
 
 def from_welcome_to_ready():
-    xpath("//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  overflow-hidden mb-2']").click()
+    while True:
+        try:
+            DRIVER.find_element(By.XPATH, "//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  overflow-hidden mb-2']").click()
+            break
+        except Exception as exception:
+            print(exception)
+            time.sleep(3)
     time.sleep(15)
     # clear notifications
-    xpath("//img[@class='h-6 cursor-pointer']").click()
+    try:
+        DRIVER.find_element(By.XPATH, "//img[@class='h-6 cursor-pointer']").click()
+    except common.exceptions.NoSuchElementException as exception:
+        pass
+    time.sleep(0.5)
+    get_back_shovel()
     time.sleep(0.5)
 
 def harvest_and_plant():
@@ -158,7 +152,7 @@ def harvest_and_plant():
 
 def get_back_shovel():
     try:
-        DRIVER.find_element(By.XPATH, "//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  text-sm']").click()
+        DRIVER.find_element(By.XPATH, "//img[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  text-sm']").click()
         xpath("//img[@class='absolute z-10 hover:img-highlight cursor-pointer']").click()
         xpath("//button[@class='bg-brown-200 w-full p-1 shadow-sm text-white text-shadow object-contain justify-center items-center hover:bg-brown-300 cursor-pointer flex disabled:opacity-50  text-sm']").click()
         log('get back shovel', 'green')
@@ -288,40 +282,46 @@ def login_metamask():
     """Start login into metamask, see config.yaml for more infor."""
     time.sleep(3)
     DRIVER.get('chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn/home.html#initialize/create-password/import-with-seed-phrase')
-    secret_xpath = '//*[@id="app-content"]/div/div[2]/div/div/form/div[4]/div[1]/div/input'
-    secret_element = xpath(secret_xpath)
-    secret_element.send_keys(PHRASE)
-    passwd_field = xpath('//*[@id="password"]')
-    confirm_passwd_field = xpath('//*[@id="confirm-password"]')
-    passwd_field.send_keys(PASSWD)
-    confirm_passwd_field.send_keys(PASSWD)
-    xpath('//*[@id="app-content"]/div/div[2]/div/div/form/div[7]/div').click()
-    xpath('//*[@id="app-content"]/div/div[2]/div/div/form/button').click()
-    xpath('//*[@id="app-content"]/div/div[2]/div/div/button').click()
-    xpath('//*[@id="popover-content"]/div/div/section/header/div/button', False).click()
+    time.sleep(3)
+    inputs = DRIVER.find_elements(By.XPATH, "//input[@class='MuiInputBase-input MuiInput-input']")
+    splitted_phase = PHRASE.split()
+    i = 0
+    for e in inputs:
+        if i >= 12:
+            e.send_keys(PASSWD)
+            print(PASSWD)
+        else:
+            e.send_keys(splitted_phase[i])
+            print(splitted_phase[i])
+        i = i + 1
+
+    xpath('//input[@id="create-new-vault__terms-checkbox"]').click()
+    DRIVER.find_element(By.XPATH, '//button[@class="button btn--rounded btn-primary create-new-vault__submit-button"]').click()
+    xpath('//button[@class="button btn--rounded btn-primary first-time-flow__button"]', False).click()
 
 
 def install_polygon_network():
     """Instaling Polygon network on Metamask."""
     xpath('/html/body').send_keys(Keys.CONTROL + Keys.HOME)
     xpath('//*[@id="app-content"]/div/div[1]/div/div[2]/div[1]/div/span').click()
-    xpath('//*[@id="app-content"]/div/div[2]/div/button').click()
+    xpath('//button[@class="button btn--rounded btn-secondary"]').click()
     name = 'Polygon'
     rpc_url = 'https://polygon-rpc.com'
     chain_id = '137'
     symbol = 'MATIC'
     block_explorer_url = 'https://polygonscan.com/'
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[1]/label/input').send_keys(name)
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[2]/label/input').send_keys(rpc_url)
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[3]/label/input').send_keys(chain_id)
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[4]/label/input').send_keys(symbol)
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[2]/div[5]/label/input').send_keys(block_explorer_url)
-    xpath('//*[@id="app-content"]/div/div[3]/div/div[2]/div[2]/div/div[2]/div/div[3]/button[2]').click()
+    inputs = DRIVER.find_elements(By.XPATH, '//input[@class="form-field__input"]')
+    inputs[0].send_keys(name)
+    inputs[1].send_keys(rpc_url)
+    inputs[2].send_keys(chain_id)
+    inputs[3].send_keys(symbol)
+    inputs[4].send_keys(block_explorer_url)
+    xpath('//button[@class="button btn--rounded btn-primary"]').click()
 
 def add_personal_sfl_wallet():
     xpath("//div[@class='identicon'][1]").click()
-    xpath("//div[@class='account-menu__item account-menu__item--clickable'][2]").click()
-    xpath("//input[@class='new-account-import-form__input-password']").send_keys(SECRET_KEY)
+    DRIVER.find_elements(By.XPATH, "//div[@class='account-menu__item__text']")[1].click()
+    xpath("//input[@id='private-key-box']").send_keys(SECRET_KEY)
     xpath("//button[@class='button btn--rounded btn-primary btn--large new-account-create-form__button']").click()
 
 def setup_linux_env():
@@ -374,12 +374,13 @@ def setup_driver():
     while not DRIVER:
         try:
             DRIVER = webdriver.Chrome(service=S, options=OPTIONS)
+            # DRIVER = webdriver.Chrome(executable_path='/Users/mengkaili/Desktop/chromedriver', options=OPTIONS)
         except:
             if tries <= max_tries:
                 raise ValueError('Was not possible to mount driver.')
             tries += 1
             log('Failed to mount driver instance. Trying again...', 'red')
-            time.sleep(0.5)
+            time.sleep(3)
 
 
 def get_new_driver():
@@ -414,4 +415,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    while True:
+        try:
+            main()
+        except Exception as e:
+            print(e)
+            time.sleep(3)
+            if DRIVER is not None:
+                DRIVER.quit()
