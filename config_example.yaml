@@ -18,6 +18,7 @@ selected_plant: caluflower
 private:
   secret_phrase: your wallet phrase
   passwd: yout password here
+  secret_key: secret_key
 # To use multi account set the use_multi_acc: true
 use_multi_acc: false
 
